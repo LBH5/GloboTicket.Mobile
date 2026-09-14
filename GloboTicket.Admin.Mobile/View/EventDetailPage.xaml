@@ -1,0 +1,167 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<view:ContentPageBase xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:converters="clr-namespace:GloboTicket.Admin.Mobile.Converters"
+             x:Class="GloboTicket.Admin.Mobile.View.EventDetailPage"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             xmlns:vm="clr-namespace:GloboTicket.Admin.Mobile.ViewModel"
+             xmlns:view="clr-namespace:GloboTicket.Admin.Mobile.View"
+             Title="EventDetailPage">
+
+    <ContentPage.Resources>
+        <converters:StatusEnumToTextConverter x:Key="StatusEnumToTextConverter" />
+        <toolkit:ListToStringConverter x:Key="ListToStringConverter" Separator=", " />
+    </ContentPage.Resources>
+
+    <Grid>
+        <ScrollView>
+            <Grid>
+                <VerticalStackLayout Padding="10">
+                    <!-- Name -->
+                    <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
+                        <Label 
+                            Text="{Binding Name}"
+                            Style="{StaticResource TitleLabelStyle}"
+                            />
+                        <Button 
+                            Grid.Column="1"
+                            Margin="5"
+                            BackgroundColor="{StaticResource Primary}"
+                            TextColor="{StaticResource White}"
+                            Command="{Binding NavigateToEditEventCommand}"
+                            FontSize="20"
+                            HorizontalOptions="End"
+                            Text="&#xe3c9;"
+                            WidthRequest="40"
+                            HeightRequest="50"
+                            />
+                    </Grid>
+                    <!-- Image -->
+
+                    <FlexLayout Direction="Row" AlignItems="Center">
+                        <CheckBox IsChecked="{Binding ShowLargeImage, Mode=OneWayToSource}" />
+                        <Label Text="Show Large Image" />
+                    </FlexLayout>
+
+                    <Image 
+                        IsVisible="{Binding ShowThumbnailImage, Mode=OneWay}"
+                        WidthRequest="100"
+                        Source="{Binding ImageUrl}"
+                        Margin="0,10"/>
+                    <Image
+                        HorizontalOptions="Fill" 
+                        IsVisible="{Binding ShowLargeImage, Mode=OneWay}"
+                        Source="{Binding ImageUrl}"
+                        Margin="0,10"/>
+
+                    <Grid RowDefinitions="Auto,*">
+                        <Grid
+                            ColumnDefinitions=".3*,.7*" 
+                            ColumnSpacing="5"
+                            RowDefinitions="*,*,*,*,*,*"
+                            RowSpacing="10">
+
+                            <!-- Row 1 Artists -->
+
+                            <Label 
+                                Grid.Row="0"
+                                Grid.Column="0"
+                                Text="Artists"
+                                />
+                            <Label 
+                                Grid.Row="0"
+                                Grid.Column="1"
+                                Style="{StaticResource ValueLabelStyle}"
+                                Text="{Binding Artists, Converter={StaticResource ListToStringConverter}, TargetNullValue='No Artists', FallbackValue='No Artists provided'}"
+                                />
+
+                            <!-- Row 2 Price -->
+                            <Label 
+                                Grid.Row="1"
+                                Grid.Column="0"
+                                Text="Price"
+                                />
+                            <HorizontalStackLayout
+                                Grid.Row="1"
+                                Grid.Column="1"
+                                Spacing="5">
+                                <Label 
+                                    Style="{StaticResource ValueLabelStyle}"
+                                    Text="{Binding Price,Mode=OneWay,StringFormat='{0:C}'}"
+                                    />
+                            </HorizontalStackLayout>
+                            <!-- Row 3 Status -->
+                            <Label 
+                                Grid.Row="2"
+                                Grid.Column="0"
+                                Text="Status"
+                                />
+                            <Label 
+                                Grid.Row="2"
+                                Grid.Column="1"
+                                Style="{StaticResource ValueLabelStyle}"
+                                Text="{Binding EventStatus,Converter={StaticResource StatusEnumToTextConverter}}"
+                                />
+                            <!-- Row 4 Date -->
+                            <Label 
+                                Grid.Row="3"
+                                Grid.Column="0"
+                                Text="Date"
+                                />
+                            <Label 
+                                Grid.Row="3"
+                                Grid.Column="1"
+                                Style="{StaticResource ValueLabelStyle}"
+                                Text="{Binding Date, StringFormat='{0:MM/dd/yyyy}'}"
+                                />
+                            <!-- Row 5 Description  -->
+                            <Label 
+                                Grid.Row="4"
+                                Grid.Column="0"
+                                Text="Description"
+                                />
+                            <Label 
+                                Grid.Row="4"
+                                Grid.Column="1"
+                                Style="{StaticResource ValueLabelStyle}"
+                                Text="{Binding Description,TargetNullValue='No Description', FallbackValue='No Description provided'}"
+                                />
+                            <!-- Row 6 Category -->
+                            <Label 
+                                Grid.Row="5"
+                                Grid.Column="0"
+                                Text="Category"
+                                />
+                            <Label 
+                                Grid.Row="5"
+                                Grid.Column="1"
+                                Style="{StaticResource ValueLabelStyle}"
+                                Text="{Binding Category.Name,TargetNullValue='No Category', FallbackValue='No Category provided'}"
+                                />
+                        </Grid>
+
+                    </Grid>
+                    <VerticalStackLayout Grid.Row="1">   
+                        <Button 
+                            Text="Cancel Event"
+                            Margin="0,10,0,0"
+                            IsVisible="{Binding IsEnabled, Source={RelativeSource Self}}"
+                            BackgroundColor="{StaticResource Primary}"
+                            TextColor="{StaticResource White}"
+                            Command="{Binding CancelEventCommand}"/>
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
+            </Grid>
+        </ScrollView>
+        <Grid
+            BackgroundColor="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray500}}"
+            IsVisible="{Binding IsBusy, Mode=OneWay}">
+            <ActivityIndicator
+                IsRunning="{Binding IsBusy, Mode=OneWay}"
+                WidthRequest="40"
+                HeightRequest="40"
+                HorizontalOptions="Center"
+                VerticalOptions="Center"/>
+        </Grid>
+    </Grid>
+</view:ContentPageBase>

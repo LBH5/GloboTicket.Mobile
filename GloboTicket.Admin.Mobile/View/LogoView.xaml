@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView x:Class="GloboTicket.Admin.Mobile.View.LogoView"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+    <Grid Padding="8,0" WidthRequest="151">
+        <Image
+            HeightRequest="40"
+            HorizontalOptions="Start"
+            Source="globoticket_logo.png"
+            Aspect="AspectFit"
+            VerticalOptions="Center" />
+    </Grid>
+</ContentView>

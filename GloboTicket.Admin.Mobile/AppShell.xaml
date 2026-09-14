@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell
+    x:Class="GloboTicket.Admin.Mobile.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:view="clr-namespace:GloboTicket.Admin.Mobile.View"
+    Title="GloboTicket.Admin.Mobile"
+    Shell.BackgroundColor="{StaticResource Primary}">
+
+    <Shell.TitleView>
+        <view:LogoView HorizontalOptions="Start" />
+    </Shell.TitleView>
+
+    <ShellContent
+        Title="Event Overview Page"
+        ContentTemplate="{DataTemplate view:EventOverviewPage}"
+        Route="EventOverviewPage" />
+
+</Shell>

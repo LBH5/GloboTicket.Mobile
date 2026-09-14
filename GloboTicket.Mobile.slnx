@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="GloboTicket.Admin.API/GloboTicket.Admin.API.csproj" />
+  <Project Path="GloboTicket.Admin.Mobile/GloboTicket.Admin.Mobile.csproj" />
+</Solution>

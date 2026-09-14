@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<view:ContentPageBase
+    x:Class="GloboTicket.Admin.Mobile.View.EventOverviewPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:converters="clr-namespace:GloboTicket.Admin.Mobile.Converters"
+    xmlns:vm="clr-namespace:GloboTicket.Admin.Mobile.ViewModel"
+    xmlns:view="clr-namespace:GloboTicket.Admin.Mobile.View"
+    Title="EventOverviewPage">
+
+    <ContentPage.Resources>
+        <converters:StatusEnumToTextConverter x:Key="StatusEnumToTextConverter" />
+        <toolkit:ListToStringConverter x:Key="ListToStringConverter" Separator=", " />
+    </ContentPage.Resources>
+
+    <Grid RowDefinitions="Auto,*">
+        <Button
+            Margin="16,16,16,8"
+            Text="Add Event"
+            Command="{Binding NavigateToAddEventCommand}"
+            HorizontalOptions="Fill" />
+        <CollectionView
+            Grid.Row="1"
+            ItemsSource="{Binding Events}"
+            SelectedItem="{Binding SelectedEvent, Mode=TwoWay}"
+            SelectionMode="Single"
+            SelectionChangedCommand="{Binding NavigateToSelectedDetailCommand}"
+            Margin="16,8,16,20">
+
+        <CollectionView.ItemsLayout>
+            <LinearItemsLayout Orientation="Vertical" ItemSpacing="20" />
+        </CollectionView.ItemsLayout>
+
+        <CollectionView.ItemTemplate>
+            <DataTemplate x:DataType="vm:EventListItemViewModel">
+                <Border
+                    Background="{StaticResource WhiteBrush}"
+                    Stroke="Transparent"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 12"
+                    Padding="12">
+                    <VisualStateManager.VisualStateGroups>
+                        <VisualStateGroupList>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Normal" />
+                                <VisualState x:Name="Selected">
+                                    <VisualState.Setters>
+                                        <Setter Property="Background" Value="{StaticResource SecondaryBrush}" />
+                                        <Setter Property="Stroke" Value="{StaticResource PrimaryBrush}" />
+                                        <Setter Property="StrokeThickness" Value="2" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateGroupList>
+                    </VisualStateManager.VisualStateGroups>
+
+                    <Grid
+                        ColumnDefinitions="120,*"
+                        ColumnSpacing="16"
+                        VerticalOptions="Start">
+
+                        <Image
+                            Source="{Binding ImageUrl, TargetNullValue=image_placeholder.png}"
+                            WidthRequest="120"
+                            HeightRequest="120"
+                            Aspect="AspectFill" />
+
+                        <VerticalStackLayout
+                            Grid.Column="1"
+                            Spacing="4"
+                            VerticalOptions="Start">
+
+                            <Label
+                                Style="{StaticResource ValueLabelStyle}"
+                                Text="{Binding Name}"
+                                Margin="0"
+                                LineBreakMode="WordWrap" />
+
+                            <Label
+                                Text="{Binding Artists,
+                                               Converter={StaticResource ListToStringConverter},
+                                               TargetNullValue='No Artists',
+                                               FallbackValue='No Artists provided'}" />
+
+                            <Label Text="{Binding Price, StringFormat='{0:C}'}" />
+
+                            <Label Text="{Binding Date, StringFormat='{0:d}'}" />
+
+                            <Label
+                                Text="{Binding Category.Name,
+                                               TargetNullValue='No Category',
+                                               FallbackValue='No Category provided'}" />
+
+                            <Label
+                                FontAttributes="Italic"
+                                Text="{Binding EventStatus,
+                                               Converter={StaticResource StatusEnumToTextConverter}}"
+                                TextColor="{StaticResource Primary}" />
+
+                        </VerticalStackLayout>
+
+                    </Grid>
+                </Border>
+
+            </DataTemplate>
+        </CollectionView.ItemTemplate>
+
+        </CollectionView>
+        <Grid
+              Grid.RowSpan="2"
+              BackgroundColor="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray500}}"
+              IsVisible="{Binding IsBusy, Mode=OneWay}">
+            <ActivityIndicator
+                IsRunning="{Binding IsBusy, Mode=OneWay}"
+                WidthRequest="40"
+                HeightRequest="40"
+                HorizontalOptions="Center"
+                VerticalOptions="Center"/>
+        </Grid>
+    </Grid>
+</view:ContentPageBase>

@@ -1,0 +1,38 @@
+# Build output
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+
+# Visual Studio / Rider / VS Code user state
+.vs/
+.vscode/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# .NET tooling
+TestResults/
+*.trx
+*.nupkg
+*.snupkg
+packages/
+artifacts/
+
+# MAUI platform build and signing files
+*.keystore
+*.jks
+*.mobileprovision
+*.p12
+*.cer
+*.apk
+*.aab
+*.ipa
+
+# Local environment and OS files
+.env
+.env.*
+!.env.example
+.DS_Store
+Thumbs.db

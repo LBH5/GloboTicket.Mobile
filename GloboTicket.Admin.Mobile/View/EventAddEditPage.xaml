@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<view:ContentPageBase x:Class="GloboTicket.Admin.Mobile.View.EventAddEditPage" xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:view="clr-namespace:GloboTicket.Admin.Mobile.View" xmlns:converters="clr-namespace:GloboTicket.Admin.Mobile.Converters" xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit" Title="EventAddEditPage">
+    <ContentPage.Resources>
+        <converters:StatusEnumToTextConverter x:Key="StatusEnumToTextConverter" />
+        <toolkit:ListToStringConverter x:Key="ListToStringConverter" Separator=", " />
+    </ContentPage.Resources>
+    <Grid>
+        <ScrollView>
+            <VerticalStackLayout Padding="16,20,16,32" Spacing="18">
+                <Label Text="{Binding PageTitle}" Style="{StaticResource TitleLabelStyle}" TextColor="{StaticResource Primary}" />
+                <VerticalStackLayout Spacing="6">
+                    <Label Text="Name" Style="{StaticResource ValueLabelStyle}" Margin="0" />
+                    <Entry Text="{Binding Name, Mode=TwoWay}" Placeholder="Enter event name" />
+                </VerticalStackLayout>
+                <VerticalStackLayout Spacing="6">
+                    <Label Text="Image URL" Style="{StaticResource ValueLabelStyle}" Margin="0" />
+                    <Entry Text="{Binding ImageUrl, Mode=TwoWay}" Placeholder="Enter image URL" />
+                    <Image Source="{Binding ImageUrl, TargetNullValue=image_placeholder.png}" Aspect="AspectFit" HeightRequest="160" />
+                </VerticalStackLayout>
+                <VerticalStackLayout Spacing="6">
+                    <Label Text="Price" Style="{StaticResource ValueLabelStyle}" Margin="0" />
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                        <Label Text="{Binding Price, StringFormat='{0:C}'}" VerticalOptions="Center" />
+                        <Stepper Grid.Column="1" Increment="5" Maximum="125" Minimum="25" Value="{Binding Price, Mode=TwoWay}" />
+                    </Grid>
+                </VerticalStackLayout>
+                <VerticalStackLayout Spacing="6">
+                    <Label Text="Status" Style="{StaticResource ValueLabelStyle}" Margin="0" />
+                    <Picker ItemsSource="{Binding StatusList}" ItemDisplayBinding="{Binding Converter={StaticResource StatusEnumToTextConverter}}" SelectedItem="{Binding EventStatus, Mode=TwoWay}" />
+                </VerticalStackLayout>
+                <VerticalStackLayout Spacing="6">
+                    <Label Text="Date" Style="{StaticResource ValueLabelStyle}" Margin="0" />
+                    <DatePicker Date="{Binding Date, Mode=TwoWay}" MinimumDate="{Binding MinDate}" />
+                </VerticalStackLayout>
+                <VerticalStackLayout Spacing="6">
+                    <Label Text="Artists" Style="{StaticResource ValueLabelStyle}" Margin="0" />
+                    <CollectionView ItemsSource="{Binding Artists}" SelectionMode="None" HeightRequest="100">
+                        <CollectionView.ItemTemplate><DataTemplate><Label Text="{Binding}" VerticalOptions="Center" /></DataTemplate></CollectionView.ItemTemplate>
+                    </CollectionView>
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                        <Entry Text="{Binding AddedArtist, Mode=TwoWay}" Placeholder="Enter artist name" />
+                        <Button Grid.Column="1" Text="+" BackgroundColor="{StaticResource Primary}" TextColor="{StaticResource White}" Command="{Binding AddArtistCommand}" />
+                    </Grid>
+                </VerticalStackLayout>
+                <VerticalStackLayout Spacing="6">
+                    <Label Text="Description" Style="{StaticResource ValueLabelStyle}" Margin="0" />
+                    <Editor Text="{Binding Description, Mode=TwoWay}" Placeholder="Enter event description" AutoSize="TextChanges" HeightRequest="120" />
+                </VerticalStackLayout>
+                <VerticalStackLayout Spacing="6">
+                    <Label Text="Category" Style="{StaticResource ValueLabelStyle}" Margin="0" />
+                    <Picker ItemsSource="{Binding Categories}" ItemDisplayBinding="{Binding Name}" SelectedItem="{Binding Category, Mode=TwoWay}" />
+                </VerticalStackLayout>
+                <Button Text="Submit" Margin="0,6,0,0" Command="{Binding SubmitCommand}" />
+            </VerticalStackLayout>
+        </ScrollView>
+        <Grid BackgroundColor="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray500}}" IsVisible="{Binding IsBusy}">
+            <ActivityIndicator IsRunning="{Binding IsBusy}" WidthRequest="40" HeightRequest="40" HorizontalOptions="Center" VerticalOptions="Center" />
+        </Grid>
+    </Grid>
+</view:ContentPageBase>
