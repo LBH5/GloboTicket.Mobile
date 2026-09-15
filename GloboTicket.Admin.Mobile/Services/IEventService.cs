@@ -10,5 +10,6 @@ public interface IEventService
     Task<bool> AddEventAsync(EventModel eventModel);
     Task<bool> UpdateEventAsync(EventModel eventModel);
     Task<bool> UpdateEventStatusAsync(Guid id, EventStatusModel status);
+    Task<bool> DeleteEventAsync(Guid id);
 }
 

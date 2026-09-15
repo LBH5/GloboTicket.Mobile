@@ -21,6 +21,9 @@ public class EventService(IEventRepository eventRepository) : IEventService
 
     public async Task<bool> UpdateEventStatusAsync(Guid id, EventStatusModel status) =>
      await eventRepository.UpdateEventStatusAsync(id, status);
-    
+
+    public async Task<bool> DeleteEventAsync(Guid id)=>
+     await eventRepository.DeleteEventAsync(id);
+
 }
 

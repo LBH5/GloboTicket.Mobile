@@ -3,14 +3,8 @@ using GloboTicket.Admin.Mobile.ViewModel;
 namespace GloboTicket.Admin.Mobile.Messages;
 
 
-public class StatusChangeMessage
+public class StatusChangeMessage(Guid eventId, EventStatusEnum status)
 {
-    public Guid EventId { get; }
-    public EventStatusEnum Status { get; }
-
-    public StatusChangeMessage(Guid eventId, EventStatusEnum status)
-    {
-        EventId = eventId;
-        Status = status;
-    }
+    public Guid EventId { get; } = eventId;
+    public EventStatusEnum Status { get; } = status;
 }

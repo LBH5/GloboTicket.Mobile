@@ -2,13 +2,17 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Maui.Core.Extensions;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
+using GloboTicket.Admin.Mobile.Messages;
 using GloboTicket.Admin.Mobile.Model;
 using GloboTicket.Admin.Mobile.Services;
 using GloboTicket.Admin.Mobile.ViewModel.Base;
 
 namespace GloboTicket.Admin.Mobile.ViewModel;
 
-public partial class EventListOverviewViewModel : ViewModelBase
+public partial class EventListOverviewViewModel : ViewModelBase,
+    IRecipient<EventAddedOrChangedMessage>,
+    IRecipient<EventDeletedMessage>
 {
     private readonly INavigationService _navigationService;
     private readonly IEventService _eventService;
@@ -39,7 +43,9 @@ public partial class EventListOverviewViewModel : ViewModelBase
     {
         _eventService = eventService;
         _navigationService = navigationService;
-    }  
+        WeakReferenceMessenger.Default.Register<EventAddedOrChangedMessage>(this);
+        WeakReferenceMessenger.Default.Register<EventDeletedMessage>(this);
+    }
 
     public override async Task LoadAsync()
     {
@@ -70,14 +76,30 @@ public partial class EventListOverviewViewModel : ViewModelBase
             Description = @event.Category.Description
         };
         return new EventListItemViewModel(
-            @event.Id, 
-            @event.Name, 
-            @event.Price, 
-            @event.ImageUrl, 
-            (EventStatusEnum)@event.Status, 
-            @event.Date, 
-            @event.Artists, 
-            @event.Description, 
+            @event.Id,
+            @event.Name,
+            @event.Price,
+            @event.ImageUrl,
+            (EventStatusEnum)@event.Status,
+            @event.Date,
+            @event.Artists,
+            @event.Description,
             category);
+    }
+
+    public  void Receive(EventAddedOrChangedMessage message)
+    {
+
+        Events.Clear();
+        _= LoadEventsAsync();
+    }
+
+    public void Receive(EventDeletedMessage message)
+    {
+       var eventToRemove = Events.FirstOrDefault(e => e.Id == message.EventId);
+        if (eventToRemove is not null)
+        {
+            Events.Remove(eventToRemove);
+        }
     }
 }

@@ -1,6 +1,10 @@
 using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
+using GloboTicket.Admin.Mobile.Messages;
 using GloboTicket.Admin.Mobile.Model;
 using GloboTicket.Admin.Mobile.Services;
 using GloboTicket.Admin.Mobile.ViewModel.Base;
@@ -10,48 +14,70 @@ namespace GloboTicket.Admin.Mobile.ViewModel;
 
 
 
-public partial class EventAddEditViewModel(
-    IEventService eventService, 
-    ICategoryService categoryService,
-    INavigationService navigationService) : ViewModelBase
+public partial class EventAddEditViewModel : ViewModelBase, IQueryAttributable
 {
-    private readonly IEventService _eventService = eventService;
-    private readonly ICategoryService _categoryService = categoryService;
-    private readonly INavigationService _navigationService = navigationService;
-
-    public EventModel? eventDetail;
-
-    [ObservableProperty]
-    private string _pageTitle = default!;
+    private readonly IEventService _eventService;
+    private readonly ICategoryService _categoryService;
+    private readonly INavigationService _navigationService;
+    private readonly IDialogService _dialogService;
+    public EventModel? EventDetail;
 
     [ObservableProperty]
-    private Guid _id = default!;
+    private string _pageTitle = null!;
 
     [ObservableProperty]
-    private string _name = default!;
+    private Guid _id;
 
     [ObservableProperty]
-    private double _price = default!;
+    [Required]
+    [MinLength(5)]
+    [MaxLength(50)]
+    [NotifyDataErrorInfo]
+    private string _name = null!;
+
+    [ObservableProperty]
+    //[Range(25,125)]
+    [CustomValidation(typeof(EventAddEditViewModel), nameof(ValidatePrice))]
+    [NotifyDataErrorInfo]
+    private double _price;
+
+    public static ValidationResult? ValidatePrice(double price, ValidationContext context)
+    {
+        if (price is < 25 or > 125)
+        {
+            return new ("Price must be between 25 and 125.");
+        }
+        return ValidationResult.Success;
+    }
 
     [ObservableProperty]
     private string _imageUrl = null!;
 
     [ObservableProperty]
-    private EventStatusEnum _eventStatus = default!;
+    [Required]
+    [NotifyDataErrorInfo]
+    private EventStatusEnum _eventStatus;
 
     [ObservableProperty]
+    [Required]
+    [NotifyDataErrorInfo]
     private DateTime _date = DateTime.Now;
 
     [ObservableProperty]
+    [MaxLength(250)]
+    [NotifyDataErrorInfo]
     private string _description = null!;
 
     [ObservableProperty]
+    [Required]
+    [NotifyDataErrorInfo]
     private CategoryModel? _category = new();
 
     public ObservableCollection<string> Artists { get; set; } = [];
 
     [ObservableProperty]
-    private string _addedArtist = default!;
+    [NotifyCanExecuteChangedFor(nameof(AddArtistCommand))]
+    private string _addedArtist = null!;
 
     [ObservableProperty]
     private DateTime _minDate = DateTime.Now;
@@ -60,20 +86,61 @@ public partial class EventAddEditViewModel(
         [.. Enum.GetValues<EventStatusEnum>()];
 
     public ObservableCollection<CategoryModel> Categories { get; set; } = [];
+    public ObservableCollection<ValidationResult> Errors { get; } = [];
 
-    [RelayCommand(CanExecute = nameof(canAddArtist))]
-    private async Task AddArtist()
+    [RelayCommand(CanExecute = nameof(CanAddArtist))]
+    private void AddArtist()
     {
+
         Artists.Add(AddedArtist);
         AddedArtist = string.Empty;
     }
-    
-    private bool canAddArtist() => !string.IsNullOrWhiteSpace(AddedArtist);
 
-    [RelayCommand(CanExecute = nameof(canSubmitEvent))]
+    private bool CanAddArtist() => !string.IsNullOrWhiteSpace(AddedArtist);
+
+    [RelayCommand(CanExecute = nameof(CanSubmitEvent))]
     private async Task SubmitEvent()
     {
-        var eventModel = new EventModel
+        ValidateAllProperties();
+        if (Errors.Any())
+        {
+            return;
+        }
+
+        if (Id == Guid.Empty)
+        {
+            EventModel model = MapDataToEventModel();
+            if(await _eventService.AddEventAsync(model))
+            {
+                WeakReferenceMessenger.Default.Send(new EventAddedOrChangedMessage());
+                await _dialogService.ShowAlertAsync("Success", "Event added successfully.");
+                await _navigationService.NavigateToOverviewPageAsync();
+            }
+            else
+            {
+                await _dialogService.ShowAlertAsync("Error", "Failed to add event. Please try again.");
+            }
+        }
+        else
+        {
+            EventModel model = MapDataToEventModel();
+            if(await _eventService.UpdateEventAsync(model))
+            {
+                WeakReferenceMessenger.Default.Send(new EventAddedOrChangedMessage());
+                await _dialogService.ShowAlertAsync("Success", "Event updated successfully.");
+                await _navigationService.GoBackAsync();
+            }
+            else
+            {
+                await _dialogService.ShowAlertAsync("Error", "Failed to update event. Please try again.");
+            }
+        }
+    }
+    private bool CanSubmitEvent() => !HasErrors && !IsBusy;
+
+    private EventModel MapDataToEventModel()
+    {
+        return new EventModel
         {
             Id = Id,
             Name = Name,
@@ -85,18 +152,29 @@ public partial class EventAddEditViewModel(
             Category = Category!,
             Artists = [.. Artists]
         };
-
-        if (Id == Guid.Empty)
-        {
-            await _eventService.AddEventAsync(eventModel);
-        }
-        else
-        {
-            await _eventService.UpdateEventAsync(eventModel);
-        }
-        await _navigationService.NavigateToEventDetailPageAsync(eventModel.Id);
     }
-    private bool canSubmitEvent() => !string.IsNullOrWhiteSpace(Name) && Price > 0 && !string.IsNullOrWhiteSpace(ImageUrl) && !string.IsNullOrWhiteSpace(Description);
+
+    public EventAddEditViewModel(
+        IEventService eventService,
+        ICategoryService categoryService,
+        INavigationService navigationService,
+        IDialogService dialogService)
+    {
+        _eventService = eventService;
+        _categoryService = categoryService;
+        _navigationService = navigationService;
+        _dialogService =    dialogService;
+        ErrorsChanged += AddEventViewModel_ErrorsChanged;
+    }
+
+
+    private void AddEventViewModel_ErrorsChanged(object? sender, DataErrorsChangedEventArgs e)
+    {
+        Errors.Clear();
+        GetErrors().ToList().ForEach(Errors.Add);
+        SubmitEventCommand.NotifyCanExecuteChanged();
+    }
+
     public override async Task LoadAsync()
     {
         await Loading(
@@ -104,11 +182,12 @@ public partial class EventAddEditViewModel(
             {
                 var categories = await _categoryService.GetAllCategoriesAsync();
                 MapCategories(categories);
-                if(eventDetail is null && Id != Guid.Empty)
+                if(EventDetail is null && Id != Guid.Empty)
                 {
-                    eventDetail = await _eventService.GetEventAsync(Id);
+                    EventDetail = await _eventService.GetEventAsync(Id);
                 }
-                MapEvent(eventDetail);
+                MapEvent(EventDetail);
+                ValidateAllProperties();
             }
         );
     }
@@ -124,7 +203,7 @@ public partial class EventAddEditViewModel(
         EventStatus = (EventStatusEnum)eventModel.Status;
         Date = eventModel.Date;
         Description = eventModel.Description;
-        Category = eventModel.Category;
+        Category = Categories.FirstOrDefault(c => c.Id == eventModel.Category.Id && c.Name == eventModel.Category.Name && c.Description == eventModel.Category.Description);
         Artists.Clear();
         foreach (var artist in eventModel.Artists)
         {
@@ -137,7 +216,20 @@ public partial class EventAddEditViewModel(
         Categories.Clear();
         foreach (var category in categories)
         {
-            Categories.Add(category);
+            Categories.Add(new CategoryModel()
+            {
+                Id = category.Id,
+                Name = category.Name,
+                Description = category.Description
+            });
+        }
+    }
+
+    public void ApplyQueryAttributes(IDictionary<string, object> query)
+    {
+        if (query.Count > 0)
+        {
+            EventDetail = query["Event"] as EventModel;
         }
     }
 }

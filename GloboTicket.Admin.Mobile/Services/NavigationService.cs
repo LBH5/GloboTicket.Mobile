@@ -6,17 +6,17 @@ namespace GloboTicket.Admin.Mobile.Services;
 public class NavigationService : INavigationService
 {
 
-    public Task NavigateToEventDetailPageAsync(Guid eventId)
+    public async Task NavigateToEventDetailPageAsync(Guid eventId)
     {
         var parameters = new Dictionary<string, object>
         {
             { "EventId", eventId }
         };
-        return Shell.Current.GoToAsync(nameof(View.EventDetailPage), parameters);
+        await Shell.Current.GoToAsync(nameof(View.EventDetailPage), parameters);
     }
 
-    public Task NavigateToAddEventPageAsync()
-     => Shell.Current.GoToAsync("event/add");
+    public async Task NavigateToAddEventPageAsync()
+     => await Shell.Current.GoToAsync("event/add");
 
     public async Task NavigateToEditEventPageAsync(EventModel detailModel)
     {
@@ -26,4 +26,10 @@ public class NavigationService : INavigationService
         };
         await Shell.Current.GoToAsync("event/edit", parameters);
     }
+
+    public async Task GoBackAsync()
+        => await Shell.Current.GoToAsync("..");
+
+    public async Task NavigateToOverviewPageAsync()
+        => await Shell.Current.GoToAsync("//EventOverviewPage");
 }   

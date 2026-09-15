@@ -1,9 +1,15 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<view:ContentPageBase x:Class="GloboTicket.Admin.Mobile.View.EventAddEditPage" xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:view="clr-namespace:GloboTicket.Admin.Mobile.View" xmlns:converters="clr-namespace:GloboTicket.Admin.Mobile.Converters" xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit" Title="EventAddEditPage">
+<view:ContentPageBase x:Class="GloboTicket.Admin.Mobile.View.EventAddEditPage"
+                    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                    xmlns:view="clr-namespace:GloboTicket.Admin.Mobile.View"
+                    xmlns:converters="clr-namespace:GloboTicket.Admin.Mobile.Converters"
+                    xmlns:dataAnnotations="clr-namespace:System.ComponentModel.DataAnnotations;assembly=System.ComponentModel.Annotations"
+                    Title="EventAddEditPage">
     <ContentPage.Resources>
         <converters:StatusEnumToTextConverter x:Key="StatusEnumToTextConverter" />
-        <toolkit:ListToStringConverter x:Key="ListToStringConverter" Separator=", " />
     </ContentPage.Resources>
+
     <Grid>
         <ScrollView>
             <VerticalStackLayout Padding="16,20,16,32" Spacing="18">
@@ -35,7 +41,7 @@
                 <VerticalStackLayout Spacing="6">
                     <Label Text="Artists" Style="{StaticResource ValueLabelStyle}" Margin="0" />
                     <CollectionView ItemsSource="{Binding Artists}" SelectionMode="None" HeightRequest="100">
-                        <CollectionView.ItemTemplate><DataTemplate><Label Text="{Binding}" VerticalOptions="Center" /></DataTemplate></CollectionView.ItemTemplate>
+                        <CollectionView.ItemTemplate><DataTemplate><Label Text="{Binding .}" VerticalOptions="Center" /></DataTemplate></CollectionView.ItemTemplate>
                     </CollectionView>
                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
                         <Entry Text="{Binding AddedArtist, Mode=TwoWay}" Placeholder="Enter artist name" />
@@ -48,9 +54,18 @@
                 </VerticalStackLayout>
                 <VerticalStackLayout Spacing="6">
                     <Label Text="Category" Style="{StaticResource ValueLabelStyle}" Margin="0" />
-                    <Picker ItemsSource="{Binding Categories}" ItemDisplayBinding="{Binding Name}" SelectedItem="{Binding Category, Mode=TwoWay}" />
+                    <Picker ItemsSource="{Binding Categories,Mode=OneWay}" ItemDisplayBinding="{Binding Name}" SelectedItem="{Binding Category, Mode=TwoWay}" />
                 </VerticalStackLayout>
-                <Button Text="Submit" Margin="0,6,0,0" Command="{Binding SubmitCommand}" />
+                                    <VerticalStackLayout Margin="0,10,0,0" BindableLayout.ItemsSource="{Binding Errors}">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="dataAnnotations:ValidationResult">
+                                <Label
+                                    Text="{Binding ErrorMessage}"
+                                    Style="{StaticResource ErrorLabelStyle}"  />
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+                <Button BackgroundColor="{StaticResource Primary}" Text="Submit" Margin="0,6,0,0" Command="{Binding SubmitEventCommand}" />
             </VerticalStackLayout>
         </ScrollView>
         <Grid BackgroundColor="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray500}}" IsVisible="{Binding IsBusy}">

@@ -38,9 +38,9 @@ public static class MauiProgram
 	private static MauiAppBuilder RegisterRepositories(this MauiAppBuilder builder)
 	{
 
-		var baseUrl = DeviceInfo.Platform == DevicePlatform.Android 
-			? "http://10.0.2.2:5191" 
-			: "http://localhost:5191";
+		var baseUrl = DeviceInfo.Platform == DevicePlatform.Android
+			? "http://localhost:5191"
+			: "http://10.0.2.2:5191";
 
 		builder.Services.AddHttpClient("GloboTicketAdminAPIClient", client =>
 		{
@@ -60,6 +60,7 @@ public static class MauiProgram
 		builder.Services.AddTransient<IEventService, EventService>();
 		builder.Services.AddSingleton<INavigationService, NavigationService>();
 		builder.Services.AddTransient<ICategoryService, CategoryService>();
+        builder.Services.AddSingleton<IDialogService, DialogService>();
 
 		return builder;
 	}
@@ -69,7 +70,7 @@ public static class MauiProgram
 		builder.Services.AddTransient<EventDetailViewModel>();
 		builder.Services.AddSingleton<EventListOverviewViewModel>();
 		builder.Services.AddTransient<EventAddEditViewModel>();
-        
+
 
 		return builder;
 	}

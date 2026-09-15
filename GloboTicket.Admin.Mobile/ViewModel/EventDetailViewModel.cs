@@ -10,43 +10,45 @@ using GloboTicket.Admin.Mobile.ViewModel.Base;
 namespace GloboTicket.Admin.Mobile.ViewModel;
 
 
-public partial class EventDetailViewModel : ViewModelBase, IQueryAttributable
+public partial class EventDetailViewModel(
+    IEventService eventService,
+    INavigationService navigationService,
+    IDialogService dialogService) : ViewModelBase, IQueryAttributable
 {
-    private readonly IEventService _eventService;
-    private readonly INavigationService _navigationService;
-    
-    [ObservableProperty]
-    private Guid id; 
+
 
     [ObservableProperty]
-    private string name = null!;
+    private Guid _id;
 
     [ObservableProperty]
-    private string description = null!;
+    private string _name = null!;
 
     [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(CancelEventCommand))]
-    private DateTime date;
-
-    [ObservableProperty]
-    private double price;
-        
-    [ObservableProperty]
-    private CategoryViewModel category = null!;
+    private string _description = null!;
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(CancelEventCommand))]
-    private EventStatusEnum eventStatus ;
+    private DateTime _date;
 
     [ObservableProperty]
-    private string imageUrl = null!;
-    
+    private double _price;
+
     [ObservableProperty]
-    private ObservableCollection<string> artists = [];
+    private CategoryViewModel _category = null!;
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(CancelEventCommand))]
+    private EventStatusEnum _eventStatus ;
+
+    [ObservableProperty]
+    private string _imageUrl = null!;
+
+    [ObservableProperty]
+    private ObservableCollection<string> _artists = [];
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ShowThumbnailImage))]
-    private bool showLargeImage;
+    private bool _showLargeImage;
     public bool ShowThumbnailImage => !ShowLargeImage;
 
     [RelayCommand]
@@ -58,7 +60,7 @@ public partial class EventDetailViewModel : ViewModelBase, IQueryAttributable
     [RelayCommand(CanExecute = nameof(CanCancelEvent))]
     private async Task CancelEvent()
     {
-        if (await _eventService.UpdateEventStatusAsync(Id, EventStatusModel.Canceled))
+        if (await eventService.UpdateEventStatusAsync(Id, EventStatusModel.Canceled))
         {
             EventStatus = EventStatusEnum.Canceled;
             WeakReferenceMessenger.Default.Send(new StatusChangeMessage(Id, EventStatus));
@@ -72,15 +74,25 @@ public partial class EventDetailViewModel : ViewModelBase, IQueryAttributable
     private async Task NavigateToEditEvent()
     {
         var detailModel = MapToEventDetailModel(this);
-        await _navigationService.NavigateToEditEventPageAsync(detailModel);
+        await navigationService.NavigateToEditEventPageAsync(detailModel);
     }
 
-
-    public EventDetailViewModel(IEventService eventService,
-        INavigationService navigationService)
+    [RelayCommand]
+    private async Task DeleteEvent()
     {
-        _eventService = eventService;
-        _navigationService = navigationService;
+        var confirm = await dialogService.ShowConfirmationAsync("Confirm Delete", "Are you sure you want to delete this event?");
+        if (confirm)
+        {
+            if (await eventService.DeleteEventAsync(Id))
+            {
+                WeakReferenceMessenger.Default.Send(new EventDeletedMessage(Id));
+                await navigationService.NavigateToOverviewPageAsync();
+            }
+            else
+            {
+                await  dialogService.ShowAlertAsync("Error", "Failed to delete event. Please try again.");
+            }
+        }
     }
 
     public override async Task LoadAsync()
@@ -90,14 +102,14 @@ public partial class EventDetailViewModel : ViewModelBase, IQueryAttributable
                 if (Id != Guid.Empty)
                 {
                     await LoadEventDetailsAsync(Id);
-                }   
+                }
             }
         );
     }
 
     private async Task LoadEventDetailsAsync(Guid eventId)
     {
-        var @event = await _eventService.GetEventAsync(eventId);
+        var @event = await eventService.GetEventAsync(eventId);
         if (@event != null)
         {
             MapEventToViewModel(@event);
@@ -137,7 +149,7 @@ public partial class EventDetailViewModel : ViewModelBase, IQueryAttributable
                 Name = viewModel.Category.Name!,
                 Description = viewModel.Category.Description
             },
-            ImageUrl = viewModel.ImageUrl ?? string.Empty,
+            ImageUrl = viewModel.ImageUrl,
             Artists = [.. viewModel.Artists]
         };
     }

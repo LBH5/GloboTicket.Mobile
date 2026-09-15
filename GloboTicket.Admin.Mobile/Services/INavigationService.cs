@@ -8,4 +8,6 @@ public interface INavigationService
     Task NavigateToEventDetailPageAsync(Guid eventId);
     Task NavigateToAddEventPageAsync();
     Task NavigateToEditEventPageAsync(EventModel detailModel);
+    Task GoBackAsync();
+    Task NavigateToOverviewPageAsync();
 }

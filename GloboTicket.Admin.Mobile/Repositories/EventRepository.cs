@@ -47,7 +47,7 @@ public class EventRepository(IHttpClientFactory httpClient) : IEventRepository
         using var client = httpClient.CreateClient("GloboTicketAdminAPIClient");
         var response = await client.PostAsJsonAsync("events", eventModel,
             new JsonSerializerOptions(JsonSerializerDefaults.Web));
-        return response.IsSuccessStatusCode;
+        return await Task.FromResult(response.IsSuccessStatusCode);
     }
 
     public async Task<bool> UpdateEventAsync(EventModel eventModel)
@@ -55,7 +55,7 @@ public class EventRepository(IHttpClientFactory httpClient) : IEventRepository
         using var client = httpClient.CreateClient("GloboTicketAdminAPIClient");
         var response = await client.PutAsJsonAsync($"events/{eventModel.Id}", eventModel,
             new JsonSerializerOptions(JsonSerializerDefaults.Web));
-        return response.IsSuccessStatusCode;
+        return await Task.FromResult(response.IsSuccessStatusCode);
     }
 
     public async Task<bool> UpdateEventStatusAsync(Guid id, EventStatusModel status)
@@ -75,6 +75,20 @@ public class EventRepository(IHttpClientFactory httpClient) : IEventRepository
             return await Task.FromResult(false);
         }
         return await Task.FromResult(false);
+    }
+
+    public async Task<bool> DeleteEventAsync(Guid id)
+    {
+        using var client = httpClient.CreateClient("GloboTicketAdminAPIClient");
+        try
+        {
+            var response = await client.DeleteAsync($"events/{id}");
+            return await Task.FromResult(response.IsSuccessStatusCode);
+        }
+        catch (Exception)
+        {
+            return await Task.FromResult(false);
+        }
     }
 }
 

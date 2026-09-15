@@ -5,7 +5,7 @@ namespace GloboTicket.Admin.Mobile.ViewModel.Base;
 
 
 
-public partial class ViewModelBase : ObservableObject, IViewModelBase
+public partial class ViewModelBase : ObservableValidator, IViewModelBase
 {
     [ObservableProperty]
     private bool _isBusy;
